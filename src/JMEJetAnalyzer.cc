@@ -335,7 +335,7 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
                 if (lPack->pt() > pTMaxChg) {
                     pTMaxChg = lPack->pt();
                     dZ2 = lPack->dz();
-					d02 = lPack->dxy();
+                    d02 = lPack->dxy();
                 }
 
                 float tkpt = lPack->pt();
@@ -439,7 +439,7 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
     }
 
     dZ.push_back(dZ2);
-	d0.push_back(d02);
+    d0.push_back(d02);
     nCh.push_back(nCh_tmp);
     nNeutrals.push_back(nNeutrals_tmp);
     axisMajor.push_back(axis1);
