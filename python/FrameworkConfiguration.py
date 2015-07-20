@@ -11,6 +11,8 @@ def get_cone_size(algo):
 def useJECFromDB(process, db):
     process.load("CondCore.DBCommon.CondDBCommon_cfi")
 
+    print("Using database %r for JECs" % db)
+
     process.jec = cms.ESSource("PoolDBESSource",
             DBParameters = cms.PSet(
                 messageLevel = cms.untracked.int32(0)
@@ -52,7 +54,7 @@ def appendJECToDB(process, payload, prefix):
             label  = cms.untracked.string(payload)
             )]
 
-def createProcess(isMC, globalTag):
+def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_db_prefix=None):
 
     # Common parameters used in all modules
     JetAnalyserCommonParameters = cms.PSet(
@@ -78,18 +80,8 @@ def createProcess(isMC, globalTag):
 
     process.GlobalTag.globaltag = globalTag
 
-    run_on_25ns = True
-    
-    # Custom JEC
-    readJECFromDB = False
-
-    jec_database = 'PY8_RunIISpring15DR74_bx25_MC.db'
-    if not run_on_25ns:
-        jec_database = 'PY8_RunIISpring15DR74_bx50_MC.db'
-
-    jec_db_prefix = 'PY8_RunIISpring15DR74_bx25_MC'
-    if not run_on_25ns:
-        jec_db_prefix = 'PY8_RunIISpring15DR74_bx50_MC'
+    if readJECFromDB and (not jec_database or not jec_db_prefix):
+        raise LogicError("You must specify the parameters jec_database and jec_db_prefix when reading JEC from DB")
 
     if readJECFromDB:
         useJECFromDB(process, jec_database)
@@ -241,7 +233,7 @@ def createProcess(isMC, globalTag):
             if readJECFromDB:
                 appendJECToDB(process, jec_payload, jec_db_prefix)
 
-            jetToolbox(process, params['algo'], 'dummy', 'out', PUMethod = pu_method, JETCorrPayload = jec_payload, JETCorrLevels = jec_levels, addPUJetID = False)
+            jetToolbox(process, params['algo'], 'dummy', 'out', runOnMC=isMC, PUMethod = pu_method, JETCorrPayload = jec_payload, JETCorrLevels = jec_levels, addPUJetID = False)
 
             algo = params['algo'].upper()
             jetCollection = '%sPFJets%s' % (params['algo'], pu_method)
@@ -479,12 +471,12 @@ def createProcess(isMC, globalTag):
     process.slimmedMETs = slimmedMETs.clone()
     if hasattr(process, 'patMET'):
         # Create MET from Type 1 PF collection
-        process.patMET.addGenMET = True
+        process.patMET.addGenMET = isMC
         process.slimmedMETs.src = cms.InputTag("patMET")
         process.slimmedMETs.rawUncertainties = cms.InputTag("patPFMet") # only central value
     else:
         # Create MET from RAW PF collection
-        process.patPFMet.addGenMET = True
+        process.patPFMet.addGenMET = isMC
         process.slimmedMETs.src = cms.InputTag("patPFMet")
         del process.slimmedMETs.rawUncertainties # not available
 
@@ -495,12 +487,12 @@ def createProcess(isMC, globalTag):
     process.slimmedMETsPuppi = slimmedMETs.clone()
     if hasattr(process, "patMETPuppi"):
         # Create MET from Type 1 PF collection
-        process.patMETPuppi.addGenMET = True
+        process.patMETPuppi.addGenMET = isMC
         process.slimmedMETsPuppi.src = cms.InputTag("patMETPuppi")
         process.slimmedMETsPuppi.rawUncertainties = cms.InputTag("patPFMetPuppi") # only central value
     else:
         # Create MET from RAW PF collection
-        process.patPFMetPuppi.addGenMET = True
+        process.patPFMetPuppi.addGenMET = isMC
         process.slimmedMETsPuppi.src = cms.InputTag("patPFMetPuppi")
         del process.slimmedMETsPuppi.rawUncertainties # not available
 
@@ -511,12 +503,12 @@ def createProcess(isMC, globalTag):
     process.slimmedMETsCHS = slimmedMETs.clone()
     if hasattr(process, "patMETCHS"):
         # Create MET from Type 1 PF collection
-        process.patMETCHS.addGenMET = True
+        process.patMETCHS.addGenMET = isMC
         process.slimmedMETsCHS.src = cms.InputTag("patMETCHS")
         process.slimmedMETsCHS.rawUncertainties = cms.InputTag("patPFMetCHS") # only central value
     else:
         # Create MET from RAW PF collection
-        process.patPFMetCHS.addGenMET = True
+        process.patPFMetCHS.addGenMET = isMC
         process.slimmedMETsCHS.src = cms.InputTag("patPFMetCHS")
         del process.slimmedMETsCHS.rawUncertainties # not available
 
@@ -528,8 +520,9 @@ def createProcess(isMC, globalTag):
     process.jmfw_analyzers = cms.Sequence()
 
     # Run
-    process.run = cms.EDAnalyzer('RunAnalyzer')
-    process.jmfw_analyzers += process.run
+    if isMC:
+        process.run = cms.EDAnalyzer('RunAnalyzer')
+        process.jmfw_analyzers += process.run
 
     # Event
     from RecoJets.Configuration.RecoPFJets_cff import kt6PFJets
@@ -653,19 +646,19 @@ def createProcess(isMC, globalTag):
     # MET
     process.met = cms.EDAnalyzer('JMEMETAnalyzer',
             src = cms.InputTag('slimmedMETs', '', 'JRA'),
-            caloMET = cms.InputTag('slimmedMETs', '', 'PAT')
+            caloMET = cms.InputTag('slimmedMETs', '', 'PAT' if isMC else 'RECO')
             )
     process.jmfw_analyzers += process.met
 
     process.met_chs = cms.EDAnalyzer('JMEMETAnalyzer',
             src = cms.InputTag('slimmedMETsCHS', '', 'JRA'),
-            caloMET = cms.InputTag('slimmedMETs', '', 'PAT')
+            caloMET = cms.InputTag('slimmedMETs', '', 'PAT' if isMC else 'RECO')
             )
     process.jmfw_analyzers += process.met_chs
 
     process.met_puppi = cms.EDAnalyzer('JMEMETAnalyzer',
             src = cms.InputTag('slimmedMETsPuppi', '', 'JRA'),
-            caloMET = cms.InputTag('slimmedMETsPuppi', '', 'PAT')
+            caloMET = cms.InputTag('slimmedMETsPuppi', '', 'PAT' if isMC else 'RECO')
             )
     process.jmfw_analyzers += process.met_puppi
 

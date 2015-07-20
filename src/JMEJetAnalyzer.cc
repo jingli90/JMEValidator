@@ -133,7 +133,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
 
   // REFERENCES & RECOJETS
   iEvent.getByToken(srcJet_, jets);
-  iEvent.getByToken(srcGenJet_, genjets);
+  bool has_gen_jets = iEvent.getByToken(srcGenJet_, genjets);
 
   //loop over the jets and fill the ntuple
   size_t nJet = (nJetMax_ == 0) ? jets->size() : std::min(nJetMax_, (unsigned int) jets->size());
@@ -207,14 +207,16 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
          jec_factors.push_back(factors);
      }
      
-     float dRmin(1000);
-     for(reco::GenJetCollection::const_iterator igen = genjets->begin();igen != genjets->end(); ++igen){
-         float dR = deltaR(jet.eta(),jet.phi(),igen->eta(),igen->phi());
-         if (dR < dRmin) {
-             dRmin = dR;
+     if (has_gen_jets) {
+         float dRmin(1000);
+         for(reco::GenJetCollection::const_iterator igen = genjets->begin();igen != genjets->end(); ++igen){
+             float dR = deltaR(jet.eta(),jet.phi(),igen->eta(),igen->phi());
+             if (dR < dRmin) {
+                 dRmin = dR;
+             }
          }
+         dRMatch.push_back(dRmin);
      }
-     dRMatch.push_back(dRmin);
 
      chargedEmEnergyFraction.push_back(jet.chargedEmEnergyFraction());
      chargedHadronEnergyFraction.push_back(jet.chargedHadronEnergyFraction());
@@ -227,6 +229,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
      neutralEmEnergyFraction.push_back(jet.neutralEmEnergyFraction());
      neutralHadronEnergyFraction.push_back(jet.neutralHadronEnergyFraction());
      photonEnergyFraction.push_back(jet.photonEnergyFraction());
+     chargedMultiplicity.push_back(jet.chargedMultiplicity());
 
      // Calo jet specific
      //emEnergyFraction.push_back(jet.emEnergyFraction());
@@ -238,36 +241,49 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
      computeBetaStar(jet, *vtx);
   }
 
-  for (size_t iGenJet = 0; iGenJet < genjets -> size(); iGenJet++) {
+  if (has_gen_jets) {
+      for (size_t iGenJet = 0; iGenJet < genjets -> size(); iGenJet++) {
 
-    const reco::GenJet & genjet = genjets->at(iGenJet)  ;
+          const reco::GenJet & genjet = genjets->at(iGenJet)  ;
 
-    if( genjet.pt () < 5 ) continue ;
+          if( genjet.pt () < 5 ) continue ;
 
-    bool b_genjet_hasMatchedRecoJet = false ;
+          bool b_genjet_hasMatchedRecoJet = false ;
+          bool b_genjet_hasMatchedRecoJetWithJetID = false ;
 
-    for (size_t iJet = 0; iJet < nJet; iJet++) {
+          for (size_t iJet = 0; iJet < nJet; iJet++) {
 
-      pat::Jet const & jet = jets->at(iJet);
-      if( jet.pt() < 5 ){ continue; }
+              pat::Jet const & jet = jets->at(iJet);
+              if( jet.pt() < 5 ){ continue; }
 
-      const reco::GenJet* matched_ref_jet = jet.genJet();
-      if( ! matched_ref_jet ) {  continue ; }
-      
-      if( genjet.pt()  != matched_ref_jet->pt() ) { continue ;}
-      if( genjet.eta() != matched_ref_jet->eta() ){ continue ;}
-      if( genjet.phi() != matched_ref_jet->phi() ){ continue ;}
+              const reco::GenJet* matched_ref_jet = jet.genJet();
+              if( ! matched_ref_jet ) {  continue ; }
 
-      b_genjet_hasMatchedRecoJet = true ;
+              if( genjet.pt()  != matched_ref_jet->pt() ) { continue ;}
+              if( genjet.eta() != matched_ref_jet->eta() ){ continue ;}
+              if( genjet.phi() != matched_ref_jet->phi() ){ continue ;}
 
-    }      
+              b_genjet_hasMatchedRecoJet = true ;
 
-    allGenJet_pt  .push_back( genjet.pt  () );
-    allGenJet_eta .push_back( genjet.eta () );
-    allGenJet_phi .push_back( genjet.phi () );
-    allGenJet_m   .push_back( genjet.mass() );
-    allGenJet_PatJetMatched  .push_back( b_genjet_hasMatchedRecoJet ) ;
+              if( ! ( jet.neutralEmEnergyFraction()     < 0.99 ) )  continue  ; 
+              if( ! ( jet.chargedHadronEnergyFraction() > 0.0  ) )  continue  ; 
+              if( ! ( jet.neutralHadronEnergyFraction() < 0.99 ) )  continue  ; 
+              if( ! ( jet.chargedEmEnergyFraction()     < 0.99 ) )  continue  ; 
+              if( ! ( jet.numberOfDaughters()           > 1    ) )  continue  ; 
+              if( ! ( jet.chargedMultiplicity()         > 0    ) )  continue  ; 
 
+              b_genjet_hasMatchedRecoJetWithJetID = true ;
+
+          }   
+
+          allGenJet_pt  .push_back( genjet.pt  () );
+          allGenJet_eta .push_back( genjet.eta () );
+          allGenJet_phi .push_back( genjet.phi () );
+          allGenJet_m   .push_back( genjet.mass() );
+          allGenJet_PatJetMatched  .push_back( b_genjet_hasMatchedRecoJet ) ;
+          allGenJet_PatJetWithJetIDMatched  .push_back( b_genjet_hasMatchedRecoJetWithJetID ) ;
+
+      }
   }
 
   tree.fill();

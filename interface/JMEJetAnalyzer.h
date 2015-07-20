@@ -84,6 +84,7 @@ class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
         std::vector<float>& chargedMuEnergyFraction = tree["chargedMuEnergyFraction"].write<std::vector<float>>();
         std::vector<float>& electronEnergyFraction = tree["electronEnergyFraction"].write<std::vector<float>>();
 
+        std::vector<int>& chargedMultiplicity = tree["chargedMultiplicity"].write<std::vector<int>>();
 
         std::vector<float>& HFEMEnergyFraction = tree["HFEMEnergyFraction"].write<std::vector<float>>();
         std::vector<float>& HFHadronEnergyFraction = tree["HFHadronEnergyFraction"].write<std::vector<float>>();
@@ -104,4 +105,5 @@ class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
         std::vector<float>& allGenJet_phi = tree["allGenJet_phi"].write<std::vector<float>>();
         std::vector<float>& allGenJet_m   = tree["allGenJet_m"  ].write<std::vector<float>>();
         std::vector<bool> & allGenJet_PatJetMatched = tree["allGenJet_patJetmatched"].write<std::vector<bool>>();
+        std::vector<bool> & allGenJet_PatJetWithJetIDMatched = tree["allGenJet_patJetWithJetIDmatched"].write<std::vector<bool>>();
 };

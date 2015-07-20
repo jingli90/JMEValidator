@@ -13,11 +13,12 @@ RunAnalyzer::~RunAnalyzer() {
 }
 
 void RunAnalyzer::endRun(const edm::Run& run, const edm::EventSetup& iSetup) {
-    edm::Handle<GenRunInfoProduct> genInfo;
-    run.getByToken(genRunInfoToken_, genInfo);
-
     run_ = run.id().run();
-    xsec_ = genInfo->crossSection();
+
+    edm::Handle<GenRunInfoProduct> genInfo;
+    if (run.getByToken(genRunInfoToken_, genInfo)) {
+        xsec_ = genInfo->crossSection();
+    }
 
     tree.fill();
 }

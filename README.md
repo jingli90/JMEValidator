@@ -5,6 +5,7 @@ Common framework for CMS JEC / JER analyzes.
 
 ### Recipe
 
+**Note**: JMEValidator requires JetToolbox at least commit [5099e5045f482eb98c768538b49bde20f6fce253](https://github.com/cms-jet/JetToolbox/commit/5099e5045f482eb98c768538b49bde20f6fce253).
 
 ```sh
 export SCRAM_ARCH=slc6_amd64_gcc491
