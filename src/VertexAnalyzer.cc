@@ -27,7 +27,3 @@ void VertexAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     tree.fill();
 }
-
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(VertexAnalyzer);
-

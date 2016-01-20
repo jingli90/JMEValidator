@@ -85,6 +85,3 @@ void HLTAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
     tree.fill();
 }
-
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(HLTAnalyzer);

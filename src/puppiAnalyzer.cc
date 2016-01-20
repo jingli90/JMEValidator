@@ -145,10 +145,3 @@ void puppiAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   
   eventCounter_++;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// define puppiAnalyzer as a plugin
-////////////////////////////////////////////////////////////////////////////////
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(puppiAnalyzer);

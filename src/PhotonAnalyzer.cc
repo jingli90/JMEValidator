@@ -34,7 +34,7 @@ namespace pat {
 PhotonAnalyzer::PhotonAnalyzer(const edm::ParameterSet& iConfig): JME::PhysicsObjectAnalyzer(iConfig),
     photons_(consumes<pat::PhotonCollection>(iConfig.getParameter<edm::InputTag>("src"))),
     electrons_(consumes<pat::ElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
-    vertices_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+    //vertices_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
     conversions_(consumes<reco::ConversionCollection>(iConfig.getParameter<edm::InputTag>("conversions"))),
     beamspot_(consumes<reco::BeamSpot>(iConfig.getParameter<edm::InputTag>("beamspot"))),
     rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rho"))),
@@ -67,9 +67,9 @@ void PhotonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     edm::Handle<pat::ElectronCollection> electronsHandle;
     iEvent.getByToken(electrons_, electronsHandle);
 
-    edm::Handle<reco::VertexCollection> verticesHandle;
-    iEvent.getByToken(vertices_, verticesHandle);
-    const auto& primaryVertex = verticesHandle->at(0);
+    //edm::Handle<reco::VertexCollection> verticesHandle;
+    //iEvent.getByToken(vertices_, verticesHandle);
+    //const auto& primaryVertex = verticesHandle->at(0);
 
     edm::Handle<reco::ConversionCollection> conversionsHandle;
     iEvent.getByToken(conversions_, conversionsHandle);
@@ -139,6 +139,3 @@ void PhotonAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
     tree.fill();
 }
-
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(PhotonAnalyzer);

@@ -92,6 +92,3 @@ void ElectronAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& 
 
     tree.fill();
 }
-
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(ElectronAnalyzer);
