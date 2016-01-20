@@ -5,23 +5,18 @@ Common framework for CMS JEC / JER analyzes.
 
 ### Recipe
 
-**Note**: JMEValidator requires JetToolbox at least commit [5099e5045f482eb98c768538b49bde20f6fce253](https://github.com/cms-jet/JetToolbox/commit/5099e5045f482eb98c768538b49bde20f6fce253).
-
 ```sh
-export SCRAM_ARCH=slc6_amd64_gcc491
-cmsrel CMSSW_7_4_6_patch2
-cd CMSSW_7_4_6_patch2/src/
+export SCRAM_ARCH=slc6_amd64_gcc493
+cmsrel CMSSW_7_6_3_patch1
+cd CMSSW_7_6_3_patch1/src/
 cmsenv
 
-git cms-addpkg CommonTools/PileupAlgos
-
-# Puppi
-git cms-merge-topic nhanvtran:puppi-etadep-746p2-v8
+git cms-init
 
 # Framework
-git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_74X
+git clone git@github.com:cms-jet/JetToolbox.git JMEAnalysis/JetToolbox -b jetToolbox_763
 git clone git@github.com:blinkseb/TreeWrapper.git JMEAnalysis/TreeWrapper
-git clone git@github.com:cms-jet/JMEValidator.git JMEAnalysis/JMEValidator -b CMSSW_7_4_X
+git clone git@github.com:cms-jet/JMEValidator.git JMEAnalysis/JMEValidator -b CMSSW_7_6_X
 
 scram b -j8
 
