@@ -80,6 +80,17 @@ class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
         std::vector<int>& pujetid_cutbasedid = tree["PUJetId_cutBasedId"].write<std::vector<int>>();
         std::vector<int>& pujetid_fullid = tree["PUJetId_fullId"].write<std::vector<int>>();
         std::vector<float>& qg_tagger = tree["QGTagger_qgLikelihood"].write<std::vector<float>>();
+
+        std::vector<float>& tau1 = tree["tau1"].write<std::vector<float>>();
+        std::vector<float>& tau2 = tree["tau2"].write<std::vector<float>>();
+        std::vector<float>& tau3 = tree["tau3"].write<std::vector<float>>();
+        std::vector<float>& tau4 = tree["tau4"].write<std::vector<float>>();
+
+	std::vector<float> & FilteredMass = tree["FilteredMass"]. write<std::vector<float>>();
+        std::vector<float> & PrunedMass	  = tree["PrunedMass"  ]. write<std::vector<float>>();
+        std::vector<float> & SoftDropMass = tree["SoftDropMass"]. write<std::vector<float>>();
+        std::vector<float> & TrimmedMass  = tree["TrimmedMass" ]. write<std::vector<float>>();
+
         std::vector<int>& nTot = tree["nTot"].write<std::vector<int>>();
         std::vector<float>& dRMatch = tree["dRMatch"].write<std::vector<float>>();
         std::vector<float>& axisMajor = tree["axisMajor"].write<std::vector<float>>();

@@ -166,23 +166,23 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
         return jec_levels[pu_method]
 
     jetsCollections = {
-            'AK1': {
-                'algo': 'ak1',
-                'pu_methods': ['Puppi', 'CHS', ''],
-                'pu_jet_id': False,
-                },
-
-            'AK2': {
-                'algo': 'ak2',
-                'pu_methods': ['Puppi', 'CHS', ''],
-                'pu_jet_id': False,
-                },
-
-            'AK3': {
-                'algo': 'ak3',
-                'pu_methods': ['Puppi', 'CHS', ''],
-                'pu_jet_id': False,
-                },
+#            'AK1': {
+#                'algo': 'ak1',
+#                'pu_methods': ['Puppi', 'CHS', ''],
+#                'pu_jet_id': False,
+#                },
+#
+#            'AK2': {
+#                'algo': 'ak2',
+#                'pu_methods': ['Puppi', 'CHS', ''],
+#                'pu_jet_id': False,
+#                },
+#
+#            'AK3': {
+#                'algo': 'ak3',
+#                'pu_methods': ['Puppi', 'CHS', ''],
+#                'pu_jet_id': False,
+#                },
 
             'AK4': {
                 'algo': 'ak4',
@@ -191,23 +191,23 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                 'qg_tagger': True,
                 },
 
-            'AK5': {
-                'algo': 'ak5',
-                'pu_methods': ['Puppi', 'CHS', ''],
-                'pu_jet_id': False,
-                },
-
-            'AK6': {
-                'algo': 'ak6',
-                'pu_methods': ['Puppi', 'CHS', ''],
-                'pu_jet_id': False,
-                },
-
-            'AK7': {
-                'algo': 'ak7',
-                'pu_methods': ['Puppi', 'CHS', ''],
-                'pu_jet_id': False,
-                },
+#            'AK5': {
+#                'algo': 'ak5',
+#                'pu_methods': ['Puppi', 'CHS', ''],
+#                'pu_jet_id': False,
+#                },
+#
+#            'AK6': {
+#                'algo': 'ak6',
+#                'pu_methods': ['Puppi', 'CHS', ''],
+#                'pu_jet_id': False,
+#                },
+#
+#            'AK7': {
+#                'algo': 'ak7',
+#                'pu_methods': ['Puppi', 'CHS', ''],
+#                'pu_jet_id': False,
+#                },
 
             'AK8': {
                 'algo': 'ak8',
@@ -215,17 +215,24 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                 'pu_jet_id': False,
                 },
 
-            'AK9': {
-                'algo': 'ak9',
-                'pu_methods': ['Puppi', 'CHS', ''],
+
+            'CA10': {
+                'algo': 'ca10',
+                'pu_methods': ['Puppi', 'CHS', 'SK', ''],
                 'pu_jet_id': False,
                 },
 
-            'AK10': {
-                'algo': 'ak10',
-                'pu_methods': ['Puppi', 'CHS', ''],
-                'pu_jet_id': False,
-                },
+#            'AK9': {
+#                'algo': 'ak9',
+#                'pu_methods': ['Puppi', 'CHS', ''],
+#                'pu_jet_id': False,
+#                },
+#
+#            'AK10': {
+#                'algo': 'ak10',
+#                'pu_methods': ['Puppi', 'CHS', ''],
+#                'pu_jet_id': False,
+#                },
             }
 
     from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
@@ -243,7 +250,17 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
             if readJECFromDB:
                 appendJECToDB(process, jec_payload, jec_db_prefix)
 
-            jetToolbox(process, params['algo'], 'dummy', 'out', runOnMC=isMC, PUMethod = pu_method, JETCorrPayload = jec_payload, JETCorrLevels = jec_levels, addPUJetID = False)
+            jetToolbox(process, params['algo'], 'dummy', 'out', runOnMC=isMC, PUMethod = pu_method, JETCorrPayload = jec_payload, JETCorrLevels = jec_levels, addPUJetID = False,
+                addPruning=True, addPrunedSubjets=True,
+                addSoftDrop=True, addSoftDropSubjets=True,
+                addTrimming=True,
+                addFiltering=True,
+                addCMSTopTagger=True,
+                addMassDrop=True,
+                addHEPTopTagger=True,
+                addNsub=True
+                       )
+
 
             algo = params['algo'].upper()
             jetCollection = '%sPFJets%s' % (params['algo'], pu_method)

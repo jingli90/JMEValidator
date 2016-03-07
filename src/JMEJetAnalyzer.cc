@@ -167,9 +167,46 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
      // PU Jet Id
      for (const std::string& userFloatName: jet.userFloatNames()) {
         // Look for a string starting with 'pileupJetIdEvaluator'
+
+       std::cout <<"Avairable variable : "<< userFloatName << std::endl ; 
+
         if (userFloatName.find("pileupJetIdEvaluator") == 0) {
             pujetid_fulldiscriminant.push_back(jet.userFloat(userFloatName));
             continue;
+        }
+
+        if (userFloatName.find("Njettiness") == 0 && userFloatName.find(":tau1") != std::string::npos ) {
+	  tau1.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("Njettiness") == 0 && userFloatName.find(":tau2") != std::string::npos ) {
+	  tau2.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("Njettiness") == 0 && userFloatName.find(":tau3") != std::string::npos ) {
+	  tau3.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("Njettiness") == 0 && userFloatName.find(":tau4") != std::string::npos ) {
+	  tau4.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+
+        if (userFloatName.find("FilteredMass") != std::string::npos ) {
+	  FilteredMass.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("PrunedMass")   != std::string::npos ) {
+	  PrunedMass .push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("SoftDropMass") != std::string::npos ) {
+	  SoftDropMass .push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("TrimmedMass")  != std::string::npos ) {
+	  TrimmedMass.push_back (jet.userFloat(userFloatName) );
+	  continue;
         }
 
         if (userFloatName.find("QGTagger") == 0)
