@@ -313,10 +313,3 @@ void LeptonsAndMETAnalyzer::recoilComputation( float &met, float &metPhi, float 
   uperp   = p1U*p1Sin;
 
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// define LeptonsAndMETAnalyzer as a plugin
-////////////////////////////////////////////////////////////////////////////////
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(LeptonsAndMETAnalyzer);

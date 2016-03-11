@@ -2,6 +2,18 @@
 
 #include "JMEAnalysis/JMEValidator/interface/PhysicsObjectAnalyzer.h"
 
+#include "DataFormats/PatCandidates/interface/Jet.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
+
+#include "DataFormats/VertexReco/interface/Vertex.h"
+
+#include "JetMETCorrections/Objects/interface/JetCorrector.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
+
 class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
 {
     public:

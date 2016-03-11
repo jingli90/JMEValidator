@@ -1,5 +1,15 @@
 import FWCore.ParameterSet.Config as cms
 
+def clean_met_(met):
+    del met.t01Variation
+    del met.t1Uncertainties
+    del met.t1SmearedVarsAndUncs
+    del met.tXYUncForRaw
+    del met.tXYUncForT1
+    del met.tXYUncForT01
+    del met.tXYUncForT1Smear
+    del met.tXYUncForT01Smear
+
 def get_cone_size(algo):
     import re
     cone_size = re.search('(\d+)', algo)
@@ -350,10 +360,12 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
     switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
 
-    electronIdModules = ['RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_PHYS14_PU20bx25_V2_cff',
-                 'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV51_cff']
+    electronIdModules = [
+            'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff',
+            'RecoEgamma.ElectronIdentification.Identification.heepElectronID_HEEPV60_cff'
+            ]
 
-    photonIdModules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_PHYS14_PU20bx25_V2_cff']
+    photonIdModules = ['RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring15_25ns_V1_cff']
 
     for idMod in electronIdModules:
         setupAllVIDIdsInModule(process, idMod, setupVIDElectronSelection)
@@ -480,8 +492,7 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
         process.slimmedMETs.src = cms.InputTag("patPFMet")
         del process.slimmedMETs.rawUncertainties # not available
 
-    del process.slimmedMETs.type1Uncertainties # not available
-    del process.slimmedMETs.type1p2Uncertainties # not available
+    clean_met_(process.slimmedMETs)
 
     ### PUPPI
     process.slimmedMETsPuppi = slimmedMETs.clone()
@@ -496,8 +507,7 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
         process.slimmedMETsPuppi.src = cms.InputTag("patPFMetPuppi")
         del process.slimmedMETsPuppi.rawUncertainties # not available
 
-    del process.slimmedMETsPuppi.type1Uncertainties # not available
-    del process.slimmedMETsPuppi.type1p2Uncertainties # not available
+    clean_met_(process.slimmedMETsPuppi)
 
     ### CHS
     process.slimmedMETsCHS = slimmedMETs.clone()
@@ -512,8 +522,7 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
         process.slimmedMETsCHS.src = cms.InputTag("patPFMetCHS")
         del process.slimmedMETsCHS.rawUncertainties # not available
 
-    del process.slimmedMETsCHS.type1Uncertainties # not available
-    del process.slimmedMETsCHS.type1p2Uncertainties # not available
+    clean_met_(process.slimmedMETsCHS)
 
     # Configure the analyzers
 
@@ -583,7 +592,7 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
             conversions = cms.InputTag('reducedEgamma:reducedConversions'),
             beamspot = cms.InputTag('offlineBeamSpot'),
             rho = cms.InputTag('fixedGridRhoFastjetAll'),
-            ids = cms.VInputTag('egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-veto', 'egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-loose', 'egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-medium', 'egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V2-standalone-tight', 'egmGsfElectronIDs:heepElectronID-HEEPV51')
+            ids = cms.VInputTag('egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-veto', 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose', 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-medium', 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight', 'egmGsfElectronIDs:heepElectronID-HEEPV60')
             )
 
     process.jmfw_analyzers += process.electrons
@@ -602,7 +611,7 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
             effAreaChHadFile = cms.FileInPath("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfChargedHadrons_V2.txt"),
             effAreaNeuHadFile = cms.FileInPath("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfNeutralHadrons_V2.txt"),
             effAreaPhoFile = cms.FileInPath("RecoEgamma/PhotonIdentification/data/PHYS14/effAreaPhotons_cone03_pfPhotons_V2.txt"),
-            ids = cms.VInputTag('egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-loose', 'egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-medium', 'egmPhotonIDs:cutBasedPhotonID-PHYS14-PU20bx25-V2-standalone-tight')
+            ids = cms.VInputTag('egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-loose', 'egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-medium', 'egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-tight')
             )
 
     process.jmfw_analyzers += process.photons

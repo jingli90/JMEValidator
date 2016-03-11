@@ -22,6 +22,3 @@ void RunAnalyzer::endRun(const edm::Run& run, const edm::EventSetup& iSetup) {
 
     tree.fill();
 }
-
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(RunAnalyzer);

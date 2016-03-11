@@ -24,16 +24,10 @@
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/JetCollection.h"
-#include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
-#include "DataFormats/PatCandidates/interface/Muon.h"
-#include "DataFormats/PatCandidates/interface/Electron.h"
-#include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/CompositeCandidate.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
-#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 
@@ -483,10 +477,3 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
     }
     pull.push_back(pull_tmp);
 }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// define JMEJetAnalyzer as a plugin
-////////////////////////////////////////////////////////////////////////////////
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(JMEJetAnalyzer);

@@ -21,7 +21,7 @@ class PhotonAnalyzer: public JME::PhysicsObjectAnalyzer {
     private:
         edm::EDGetTokenT<pat::PhotonCollection> photons_;
         edm::EDGetTokenT<pat::ElectronCollection> electrons_;
-        edm::EDGetTokenT<reco::VertexCollection> vertices_;
+        //edm::EDGetTokenT<reco::VertexCollection> vertices_;
         edm::EDGetTokenT<reco::ConversionCollection> conversions_;
         edm::EDGetTokenT<reco::BeamSpot> beamspot_;
         edm::EDGetTokenT<double> rhoToken_;

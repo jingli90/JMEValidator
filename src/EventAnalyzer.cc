@@ -130,6 +130,3 @@ void EventAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
   tree.fill();
 }
-
-#include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(EventAnalyzer);
