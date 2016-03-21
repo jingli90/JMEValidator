@@ -49,11 +49,13 @@ class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
 
         edm::EDGetTokenT<std::vector<reco::GenJet>> srcGenJets_;
 
-	std::string srcGenjetNSub ; 
+	std::string jetAlgo ; 
 
 	edm::EDGetTokenT< edm::ValueMap<float> > token_tau1 ; 
 	edm::EDGetTokenT< edm::ValueMap<float> > token_tau2 ; 
 	edm::EDGetTokenT< edm::ValueMap<float> > token_tau3 ; 
+
+	edm::EDGetTokenT< edm::ValueMap<float> > token_gensoftdrop ; 
 
 
         // Tree branches
@@ -142,6 +144,7 @@ class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
         std::vector<float>& allgentau1 = tree["allGenjet_tau1"].write<std::vector<float>>();
         std::vector<float>& allgentau2 = tree["allGenjet_tau2"].write<std::vector<float>>();
         std::vector<float>& allgentau3 = tree["allGenjet_tau3"].write<std::vector<float>>();
+        std::vector<float>& allgen_softdropmass = tree["allGenjet_softdropmass"].write<std::vector<float>>();
 
 
 };

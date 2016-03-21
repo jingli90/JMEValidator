@@ -66,10 +66,11 @@ JMEJetAnalyzer::JMEJetAnalyzer(const edm::ParameterSet& iConfig)
   , deltaRPartonMax_(0.0)
   , jetCorrector_(0)
   , srcGenJets_    (consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genjets")))
-  , srcGenjetNSub( iConfig.getParameter<std::string>("GenjetNsub") )
-  , token_tau1( consumes<  edm::ValueMap<float>  >(edm::InputTag( srcGenjetNSub , "tau1", "") ) )
-  , token_tau2( consumes<  edm::ValueMap<float>  >(edm::InputTag( srcGenjetNSub , "tau2", "") ) )
-  , token_tau3( consumes<  edm::ValueMap<float>  >(edm::InputTag( srcGenjetNSub , "tau3", "") ) )
+  , jetAlgo ( iConfig.getParameter<std::string>("JetAlgo") )
+  , token_tau1( consumes<  edm::ValueMap<float>  >(edm::InputTag( "GenJetNjettiness" + jetAlgo , "tau1", "") ) )
+  , token_tau2( consumes<  edm::ValueMap<float>  >(edm::InputTag( "GenJetNjettiness" + jetAlgo , "tau2", "") ) )
+  , token_tau3( consumes<  edm::ValueMap<float>  >(edm::InputTag( "GenJetNjettiness" + jetAlgo , "tau3", "") ) )
+  , token_gensoftdrop( consumes<  edm::ValueMap<float>  >(edm::InputTag(jetAlgo + "GenJetsSoftDropMass" , "", "") ) )
 {
   if (iConfig.exists("deltaRMax")) {
     deltaRMax_=iConfig.getParameter<double>("deltaRMax");
@@ -295,6 +296,9 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
     iEvent.getByToken( token_tau2 , genjet_tau2 );
     iEvent.getByToken( token_tau3 , genjet_tau3 );
 
+    edm::Handle< edm::ValueMap<float> > genjet_softdropmass ; 
+    iEvent.getByToken( token_gensoftdrop , genjet_softdropmass ) ;
+
       for (size_t iGenJet = 0; iGenJet < genjets -> size(); iGenJet++) {
 
           const reco::GenJet & genjet = genjets->at(iGenJet)  ;
@@ -340,7 +344,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
 	  allgentau1 . push_back(  (*genjet_tau1)[ genjet_ptr ] );
 	  allgentau2 . push_back(  (*genjet_tau2)[ genjet_ptr ] );
 	  allgentau3 . push_back(  (*genjet_tau3)[ genjet_ptr ] );
-
+	  allgen_softdropmass . push_back(  (*genjet_softdropmass)[ genjet_ptr ] );
       }
   }
 
