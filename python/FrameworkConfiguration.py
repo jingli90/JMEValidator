@@ -633,8 +633,41 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
 
     process.jmfw_analyzers += process.photons
 
+
+
     # Jets
     for name, params in jetsCollections.items():
+
+        ### --- Satoshi
+        ### -- Add NSubJet of GenJet 
+        ### (Reference of this code : taken from jettoolbox )
+        from RecoJets.JetProducers.nJettinessAdder_cfi import Njettiness
+        supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
+        size = ''
+        for type, tmpAlgo in supportedJetAlgos.iteritems(): 
+            if type in params['algo'].lower():
+                size = params['algo'].replace( type, '' )                
+        jetSize = int(size)/10.
+        jetALGO = params['algo']
+        rangeTau = range(1,4)
+        print 'enJet Nsubjet for'+params['algo']
+        newGenJetNsubJettiness =   Njettiness.clone( src = cms.InputTag( params['algo']+'GenJetsNoNu'), # ak4GenjetNoNu etc.
+                                                     Njets=cms.vuint32(rangeTau),         # compute 1-, 2-, 3-, 4- subjettiness
+                                                     # variables for measure definition : 
+                                                     measureDefinition = cms.uint32( 0 ), # CMS default is normalized measure
+                                                     beta = cms.double(1.0),              # CMS default is 1
+                                                     R0 = cms.double( jetSize ),              # CMS default is jet cone size
+                                                     Rcutoff = cms.double( 999.0),       # not used by default
+                                                     # variables for axes definition :
+                                                         axesDefinition = cms.uint32( 6 ),    # CMS default is 1-pass KT axes
+                                                     nPass = cms.int32(999),             # not used by default
+                                                     akAxesR0 = cms.double(-999.0) )        # not used by default
+        setattr( process , 'GenJetNjettiness'+jetALGO , newGenJetNsubJettiness ) 
+        #   elemToKeep += [ 'keep *_GenJetNjettiness'+jetALGO'_*_*' ]
+        process.jmfw_analyzers += newGenJetNsubJettiness
+        #### --- Satoshi 
+ 
+
         for index, pu_method in enumerate(params['pu_methods']):
 
             algo = params['algo'].upper()
@@ -662,6 +695,7 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                     srcVtx        = cms.InputTag('offlineSlimmedPrimaryVertices'),
                     srcMuons      = cms.InputTag('selectedPatMuons'),
                     genjets       = cms.InputTag('slimmedGenJets'),
+                    GenjetNsub = cms.string( 'GenJetNjettiness'+jetALGO ) , 
                     )
 
             name = (algo + 'PF' + pu_method).upper()

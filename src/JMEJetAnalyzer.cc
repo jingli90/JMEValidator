@@ -55,7 +55,7 @@ JMEJetAnalyzer::JMEJetAnalyzer(const edm::ParameterSet& iConfig)
   , JetCorLabel_   (iConfig.getParameter<std::string>("JetCorLabel"))
   , JetCorLevels_  (iConfig.getParameter<std::vector<std::string>>("JetCorLevels"))
   , srcJet_        (consumes<std::vector<pat::Jet>>(iConfig.getParameter<edm::InputTag>("srcJet")))
-  , srcGenJet_        (consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("srcGenJet")))
+  , srcGenJet_        (consumes<edm::View<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("srcGenJet")))
   , srcVtx_        (consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("srcVtx")))
   , srcMuons_      (consumes<std::vector<pat::Muon>>(iConfig.getParameter<edm::InputTag>("srcMuons")))
   , doComposition_ (iConfig.getParameter<bool>("doComposition"))
@@ -66,6 +66,10 @@ JMEJetAnalyzer::JMEJetAnalyzer(const edm::ParameterSet& iConfig)
   , deltaRPartonMax_(0.0)
   , jetCorrector_(0)
   , srcGenJets_    (consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genjets")))
+  , srcGenjetNSub( iConfig.getParameter<std::string>("GenjetNsub") )
+  , token_tau1( consumes<  edm::ValueMap<float>  >(edm::InputTag( srcGenjetNSub , "tau1", "") ) )
+  , token_tau2( consumes<  edm::ValueMap<float>  >(edm::InputTag( srcGenjetNSub , "tau2", "") ) )
+  , token_tau3( consumes<  edm::ValueMap<float>  >(edm::InputTag( srcGenjetNSub , "tau3", "") ) )
 {
   if (iConfig.exists("deltaRMax")) {
     deltaRMax_=iConfig.getParameter<double>("deltaRMax");
@@ -121,7 +125,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
   edm::Handle<std::vector<pat::Jet> >            jets;
   edm::Handle<std::vector<reco::Vertex>>         vtx;
   edm::Handle<edm::View<pat::Muon> >             muons;
-  edm::Handle<reco::GenJetCollection>            genjets;
+  edm::Handle<edm::View<reco::GenJet>>            genjets;
 
   iEvent.getByToken(srcVtx_, vtx);
 
@@ -239,13 +243,17 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
      
      if (has_gen_jets) {
          float dRmin(1000);
-         for(reco::GenJetCollection::const_iterator igen = genjets->begin();igen != genjets->end(); ++igen){
+	 int idxClosestGenJet = -1 ; 
+         for( unsigned int iJet = 0 ; iJet < genjets -> size() ; iJet ++ ){
+	   const reco::GenJet * igen = & ( genjets->at( iJet ) ) ; 
              float dR = deltaR(jet.eta(),jet.phi(),igen->eta(),igen->phi());
              if (dR < dRmin) {
                  dRmin = dR;
+		 idxClosestGenJet = (int) iJet ;
              }
          }
          dRMatch.push_back(dRmin);
+	 idxOfClosestGenJet.push_back( idxClosestGenJet );
      }
 
      chargedEmEnergyFraction.push_back(jet.chargedEmEnergyFraction());
@@ -272,6 +280,21 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
   }
 
   if (has_gen_jets) {
+
+//    edm::Handle< edm::ValueMap<float> > genjet_tau1 ; 
+//    iEvent.getByLabel( "tau1" , genjet_tau1 );
+//    edm::Handle< edm::ValueMap<float> > genjet_tau2 ; 
+//    iEvent.getByLabel( srcGenjetNSub "tau2" , genjet_tau2 );
+//    edm::Handle< edm::ValueMap<float> > genjet_tau3 ; 
+//    iEvent.getByLabel( srcGenjetNSub "tau3" , genjet_tau3 );
+
+    edm::Handle< edm::ValueMap<float> > genjet_tau1 ; 
+    edm::Handle< edm::ValueMap<float> > genjet_tau2 ; 
+    edm::Handle< edm::ValueMap<float> > genjet_tau3 ; 
+    iEvent.getByToken( token_tau1 , genjet_tau1 );
+    iEvent.getByToken( token_tau2 , genjet_tau2 );
+    iEvent.getByToken( token_tau3 , genjet_tau3 );
+
       for (size_t iGenJet = 0; iGenJet < genjets -> size(); iGenJet++) {
 
           const reco::GenJet & genjet = genjets->at(iGenJet)  ;
@@ -312,6 +335,11 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
           allGenJet_m   .push_back( genjet.mass() );
           allGenJet_PatJetMatched  .push_back( b_genjet_hasMatchedRecoJet ) ;
           allGenJet_PatJetWithJetIDMatched  .push_back( b_genjet_hasMatchedRecoJetWithJetID ) ;
+	  
+	  const edm::Ptr<reco::GenJet> genjet_ptr = genjets -> ptrAt( iGenJet ) ;
+	  allgentau1 . push_back(  (*genjet_tau1)[ genjet_ptr ] );
+	  allgentau2 . push_back(  (*genjet_tau2)[ genjet_ptr ] );
+	  allgentau3 . push_back(  (*genjet_tau3)[ genjet_ptr ] );
 
       }
   }
