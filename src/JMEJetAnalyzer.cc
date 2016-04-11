@@ -172,8 +172,6 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
      // PU Jet Id
      for (const std::string& userFloatName: jet.userFloatNames()) {
         // Look for a string starting with 'pileupJetIdEvaluator'
-
-
         if (userFloatName.find("pileupJetIdEvaluator") == 0) {
             pujetid_fulldiscriminant.push_back(jet.userFloat(userFloatName));
             continue;

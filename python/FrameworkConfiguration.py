@@ -166,23 +166,23 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
         return jec_levels[pu_method]
 
     jetsCollections = {
-#            'AK1': {
-#                'algo': 'ak1',
-#                'pu_methods': ['Puppi', 'CHS', ''],
-#                'pu_jet_id': False,
-#                },
-#
-#            'AK2': {
-#                'algo': 'ak2',
-#                'pu_methods': ['Puppi', 'CHS', ''],
-#                'pu_jet_id': False,
-#                },
-#
-#            'AK3': {
-#                'algo': 'ak3',
-#                'pu_methods': ['Puppi', 'CHS', ''],
-#                'pu_jet_id': False,
-#                },
+            'AK1': {
+                'algo': 'ak1',
+                'pu_methods': ['Puppi', 'CHS', ''],
+                'pu_jet_id': False,
+                },
+
+            'AK2': {
+                'algo': 'ak2',
+                'pu_methods': ['Puppi', 'CHS', ''],
+                'pu_jet_id': False,
+                },
+
+            'AK3': {
+                'algo': 'ak3',
+                'pu_methods': ['Puppi', 'CHS', ''],
+                'pu_jet_id': False,
+                },
 
             'AK4': {
                 'algo': 'ak4',
@@ -191,23 +191,23 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                 'qg_tagger': True,
                 },
 
-#            'AK5': {
-#                'algo': 'ak5',
-#                'pu_methods': ['Puppi', 'CHS', ''],
-#                'pu_jet_id': False,
-#                },
-#
-#            'AK6': {
-#                'algo': 'ak6',
-#                'pu_methods': ['Puppi', 'CHS', ''],
-#                'pu_jet_id': False,
-#                },
-#
-#            'AK7': {
-#                'algo': 'ak7',
-#                'pu_methods': ['Puppi', 'CHS', ''],
-#                'pu_jet_id': False,
-#                },
+            'AK5': {
+                'algo': 'ak5',
+                'pu_methods': ['Puppi', 'CHS', ''],
+                'pu_jet_id': False,
+                },
+
+            'AK6': {
+                'algo': 'ak6',
+                'pu_methods': ['Puppi', 'CHS', ''],
+                'pu_jet_id': False,
+                },
+
+            'AK7': {
+                'algo': 'ak7',
+                'pu_methods': ['Puppi', 'CHS', ''],
+                'pu_jet_id': False,
+                },
 
             'AK8': {
                 'algo': 'ak8',
@@ -215,6 +215,17 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                 'pu_jet_id': False,
                 },
 
+            'AK9': {
+                'algo': 'ak9',
+                'pu_methods': ['Puppi', 'CHS', ''],
+                'pu_jet_id': False,
+                },
+
+            'AK10': {
+                'algo': 'ak10',
+                'pu_methods': ['Puppi', 'CHS', ''],
+                'pu_jet_id': False,
+                },
 
             'CA10': {
                 'algo': 'ca10',
@@ -222,17 +233,6 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                 'pu_jet_id': False,
                 },
 
-#            'AK9': {
-#                'algo': 'ak9',
-#                'pu_methods': ['Puppi', 'CHS', ''],
-#                'pu_jet_id': False,
-#                },
-#
-#            'AK10': {
-#                'algo': 'ak10',
-#                'pu_methods': ['Puppi', 'CHS', ''],
-#                'pu_jet_id': False,
-#                },
             }
 
     from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
@@ -633,14 +633,10 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
 
     process.jmfw_analyzers += process.photons
 
-
-
     # Jets
     for name, params in jetsCollections.items():
 
-        ### --- Satoshi
         ### -- Add NSubJet of GenJet 
-        ### (Reference of this code : taken from jettoolbox )
         from RecoJets.JetProducers.nJettinessAdder_cfi import Njettiness
         supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
         size = ''
@@ -660,12 +656,12 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                                                      # variables for measure definition : 
                                                      measureDefinition = cms.uint32( 0 ), # CMS default is normalized measure
                                                      beta = cms.double(1.0),              # CMS default is 1
-                                                     R0 = cms.double( jetSize ),              # CMS default is jet cone size
-                                                     Rcutoff = cms.double( 999.0),       # not used by default
-                                                     # variables for axes definition :
-                                                         axesDefinition = cms.uint32( 6 ),    # CMS default is 1-pass KT axes
-                                                     nPass = cms.int32(999),             # not used by default
-                                                     akAxesR0 = cms.double(-999.0) )        # not used by default
+                                                     R0 = cms.double( jetSize ),          # CMS default is jet cone size
+                                                     Rcutoff = cms.double( 999.0),        # <- not used by default
+                                                    # variables for axes definition :
+                                                     axesDefinition = cms.uint32( 6 ),    # CMS default is 1-pass KT axes
+                                                     nPass = cms.int32(999),              # <- not used by default
+                                                     akAxesR0 = cms.double(-999.0) )      # <- not used by default
         setattr( process , 'GenJetNjettiness'+jetALGO , newGenJetNsubJettiness ) 
         process.jmfw_analyzers += newGenJetNsubJettiness
         #
@@ -691,7 +687,6 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
         setattr( process, params['algo']+'GenJetsSoftDropMass', genSoftDropMass )
         process.jmfw_analyzers += genSoftDrop
         process.jmfw_analyzers += genSoftDropMass
-       #### --- Satoshi 
  
 
         for index, pu_method in enumerate(params['pu_methods']):

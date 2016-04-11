@@ -134,7 +134,6 @@ class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
         //std::vector<float>& emEnergyInEE = tree["emEnergyInEE"].write<std::vector<float>>();
         //std::vector<float>& emEnergyInHF = tree["emEnergyInHF"].write<std::vector<float>>();
         //std::vector<float>& energyFractionHadronic = tree["energyFractionHadronic"].write<std::vector<float>>();
-
         std::vector<float>& allGenJet_pt  = tree["allGenJet_pt" ].write<std::vector<float>>();
         std::vector<float>& allGenJet_eta = tree["allGenJet_eta"].write<std::vector<float>>();
         std::vector<float>& allGenJet_phi = tree["allGenJet_phi"].write<std::vector<float>>();
