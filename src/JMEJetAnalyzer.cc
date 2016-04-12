@@ -55,7 +55,7 @@ JMEJetAnalyzer::JMEJetAnalyzer(const edm::ParameterSet& iConfig)
   , JetCorLabel_   (iConfig.getParameter<std::string>("JetCorLabel"))
   , JetCorLevels_  (iConfig.getParameter<std::vector<std::string>>("JetCorLevels"))
   , srcJet_        (consumes<std::vector<pat::Jet>>(iConfig.getParameter<edm::InputTag>("srcJet")))
-  , srcGenJet_        (consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("srcGenJet")))
+  , srcGenJet_        (consumes<edm::View<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("srcGenJet")))
   , srcVtx_        (consumes<std::vector<reco::Vertex>>(iConfig.getParameter<edm::InputTag>("srcVtx")))
   , srcMuons_      (consumes<std::vector<pat::Muon>>(iConfig.getParameter<edm::InputTag>("srcMuons")))
   , doComposition_ (iConfig.getParameter<bool>("doComposition"))
@@ -66,6 +66,11 @@ JMEJetAnalyzer::JMEJetAnalyzer(const edm::ParameterSet& iConfig)
   , deltaRPartonMax_(0.0)
   , jetCorrector_(0)
   , srcGenJets_    (consumes<std::vector<reco::GenJet>>(iConfig.getParameter<edm::InputTag>("genjets")))
+  , jetAlgo ( iConfig.getParameter<std::string>("JetAlgo") )
+  , token_tau1( consumes<  edm::ValueMap<float>  >(edm::InputTag( "GenJetNjettiness" + jetAlgo , "tau1", "") ) )
+  , token_tau2( consumes<  edm::ValueMap<float>  >(edm::InputTag( "GenJetNjettiness" + jetAlgo , "tau2", "") ) )
+  , token_tau3( consumes<  edm::ValueMap<float>  >(edm::InputTag( "GenJetNjettiness" + jetAlgo , "tau3", "") ) )
+  , token_gensoftdrop( consumes<  edm::ValueMap<float>  >(edm::InputTag(jetAlgo + "GenJetsSoftDropMass" , "", "") ) )
 {
   if (iConfig.exists("deltaRMax")) {
     deltaRMax_=iConfig.getParameter<double>("deltaRMax");
@@ -121,7 +126,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
   edm::Handle<std::vector<pat::Jet> >            jets;
   edm::Handle<std::vector<reco::Vertex>>         vtx;
   edm::Handle<edm::View<pat::Muon> >             muons;
-  edm::Handle<reco::GenJetCollection>            genjets;
+  edm::Handle<edm::View<reco::GenJet>>            genjets;
 
   iEvent.getByToken(srcVtx_, vtx);
 
@@ -172,6 +177,40 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
             continue;
         }
 
+        if (userFloatName.find("Njettiness") == 0 && userFloatName.find(":tau1") != std::string::npos ) {
+	  tau1.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("Njettiness") == 0 && userFloatName.find(":tau2") != std::string::npos ) {
+	  tau2.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("Njettiness") == 0 && userFloatName.find(":tau3") != std::string::npos ) {
+	  tau3.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("Njettiness") == 0 && userFloatName.find(":tau4") != std::string::npos ) {
+	  tau4.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+
+        if (userFloatName.find("FilteredMass") != std::string::npos ) {
+	  FilteredMass.push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("PrunedMass")   != std::string::npos ) {
+	  PrunedMass .push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("SoftDropMass") != std::string::npos ) {
+	  SoftDropMass .push_back( jet.userFloat(userFloatName) );
+	  continue;
+        }
+        if (userFloatName.find("TrimmedMass")  != std::string::npos ) {
+	  TrimmedMass.push_back (jet.userFloat(userFloatName) );
+	  continue;
+        }
+
         if (userFloatName.find("QGTagger") == 0)
             qg_tagger.push_back(jet.userFloat(userFloatName));
      }
@@ -203,13 +242,17 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
      
      if (has_gen_jets) {
          float dRmin(1000);
-         for(reco::GenJetCollection::const_iterator igen = genjets->begin();igen != genjets->end(); ++igen){
+	 int idxClosestGenJet = -1 ; 
+         for( unsigned int iJet = 0 ; iJet < genjets -> size() ; iJet ++ ){
+	   const reco::GenJet * igen = & ( genjets->at( iJet ) ) ; 
              float dR = deltaR(jet.eta(),jet.phi(),igen->eta(),igen->phi());
              if (dR < dRmin) {
                  dRmin = dR;
+		 idxClosestGenJet = (int) iJet ;
              }
          }
          dRMatch.push_back(dRmin);
+	 idxOfClosestGenJet.push_back( idxClosestGenJet );
      }
 
      chargedEmEnergyFraction.push_back(jet.chargedEmEnergyFraction());
@@ -236,6 +279,24 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
   }
 
   if (has_gen_jets) {
+
+//    edm::Handle< edm::ValueMap<float> > genjet_tau1 ; 
+//    iEvent.getByLabel( "tau1" , genjet_tau1 );
+//    edm::Handle< edm::ValueMap<float> > genjet_tau2 ; 
+//    iEvent.getByLabel( srcGenjetNSub "tau2" , genjet_tau2 );
+//    edm::Handle< edm::ValueMap<float> > genjet_tau3 ; 
+//    iEvent.getByLabel( srcGenjetNSub "tau3" , genjet_tau3 );
+
+    edm::Handle< edm::ValueMap<float> > genjet_tau1 ; 
+    edm::Handle< edm::ValueMap<float> > genjet_tau2 ; 
+    edm::Handle< edm::ValueMap<float> > genjet_tau3 ; 
+    iEvent.getByToken( token_tau1 , genjet_tau1 );
+    iEvent.getByToken( token_tau2 , genjet_tau2 );
+    iEvent.getByToken( token_tau3 , genjet_tau3 );
+
+    edm::Handle< edm::ValueMap<float> > genjet_softdropmass ; 
+    iEvent.getByToken( token_gensoftdrop , genjet_softdropmass ) ;
+
       for (size_t iGenJet = 0; iGenJet < genjets -> size(); iGenJet++) {
 
           const reco::GenJet & genjet = genjets->at(iGenJet)  ;
@@ -276,7 +337,12 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
           allGenJet_m   .push_back( genjet.mass() );
           allGenJet_PatJetMatched  .push_back( b_genjet_hasMatchedRecoJet ) ;
           allGenJet_PatJetWithJetIDMatched  .push_back( b_genjet_hasMatchedRecoJetWithJetID ) ;
-
+	  
+	  const edm::Ptr<reco::GenJet> genjet_ptr = genjets -> ptrAt( iGenJet ) ;
+	  allgentau1 . push_back(  (*genjet_tau1)[ genjet_ptr ] );
+	  allgentau2 . push_back(  (*genjet_tau2)[ genjet_ptr ] );
+	  allgentau3 . push_back(  (*genjet_tau3)[ genjet_ptr ] );
+	  allgen_softdropmass . push_back(  (*genjet_softdropmass)[ genjet_ptr ] );
       }
   }
 
