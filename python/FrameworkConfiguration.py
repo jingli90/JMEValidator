@@ -226,6 +226,13 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                 'pu_methods': ['Puppi', 'CHS', ''],
                 'pu_jet_id': False,
                 },
+
+            'CA10': {
+                'algo': 'ca10',
+                'pu_methods': ['Puppi', 'CHS', 'SK', ''],
+                'pu_jet_id': False,
+                },
+
             }
 
     from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
@@ -243,7 +250,17 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
             if readJECFromDB:
                 appendJECToDB(process, jec_payload, jec_db_prefix)
 
-            jetToolbox(process, params['algo'], 'dummy', 'out', runOnMC=isMC, PUMethod = pu_method, JETCorrPayload = jec_payload, JETCorrLevels = jec_levels, addPUJetID = False)
+            jetToolbox(process, params['algo'], 'dummy', 'out', runOnMC=isMC, PUMethod = pu_method, JETCorrPayload = jec_payload, JETCorrLevels = jec_levels, addPUJetID = False,
+                addPruning=True, addPrunedSubjets=True,
+                addSoftDrop=True, addSoftDropSubjets=True,
+                addTrimming=True,
+                addFiltering=True,
+                addCMSTopTagger=True,
+                addMassDrop=True,
+                addHEPTopTagger=True,
+                addNsub=True
+                       )
+
 
             algo = params['algo'].upper()
             jetCollection = '%sPFJets%s' % (params['algo'], pu_method)
@@ -618,6 +635,60 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
 
     # Jets
     for name, params in jetsCollections.items():
+
+        ### -- Add NSubJet of GenJet 
+        from RecoJets.JetProducers.nJettinessAdder_cfi import Njettiness
+        supportedJetAlgos = { 'ak': 'AntiKt', 'ca' : 'CambridgeAachen', 'kt' : 'Kt' }
+        size = ''
+        algorithm = ''
+        for type, tmpAlgo in supportedJetAlgos.iteritems(): 
+            if type in params['algo'].lower():
+                size = params['algo'].replace( type, '' )                
+                algorithm = tmpAlgo
+
+
+        jetSize = int(size)/10.
+        jetALGO = params['algo']
+        rangeTau = range(1,4)
+        print 'enJet Nsubjet for'+params['algo']
+        newGenJetNsubJettiness =   Njettiness.clone( src = cms.InputTag( params['algo']+'GenJetsNoNu'), # ak4GenjetNoNu etc.
+                                                     Njets=cms.vuint32(rangeTau),         # compute 1-, 2-, 3-, 4- subjettiness
+                                                     # variables for measure definition : 
+                                                     measureDefinition = cms.uint32( 0 ), # CMS default is normalized measure
+                                                     beta = cms.double(1.0),              # CMS default is 1
+                                                     R0 = cms.double( jetSize ),          # CMS default is jet cone size
+                                                     Rcutoff = cms.double( 999.0),        # <- not used by default
+                                                    # variables for axes definition :
+                                                     axesDefinition = cms.uint32( 6 ),    # CMS default is 1-pass KT axes
+                                                     nPass = cms.int32(999),              # <- not used by default
+                                                     akAxesR0 = cms.double(-999.0) )      # <- not used by default
+        setattr( process , 'GenJetNjettiness'+jetALGO , newGenJetNsubJettiness ) 
+        process.jmfw_analyzers += newGenJetNsubJettiness
+        #
+        # -- Gen Soft Drop
+        # 
+        #  'ak8PFJetsCHSSoftDrop' comes from 'ak5PFJetsSoftDrop' which is defined : 
+        #        https://github.com/cms-sw/cmssw/blob/7e2655ffaf3e2a7fa9ab823e788d5059c4e2353d/RecoJets/JetProducers/python/ak5PFJetsSoftDrop_cfi.py
+        from RecoJets.Configuration.RecoPFJets_cff import ak8PFJetsCHSSoftDrop, ak8PFJetsCHSSoftDropMass
+        genSoftDrop = ak8PFJetsCHSSoftDrop.clone(
+            src = cms.InputTag( params['algo']+'GenJetsNoNu' ),
+            rParam = jetSize, 
+            jetAlgorithm = algorithm ,
+            useExplicitGhosts=True,
+            R0= cms.double(jetSize),
+            beta= cms.double( 0.0 ), # which is jettoolbox default.
+            writeCompound = cms.bool(True),
+            jetCollInstanceName=cms.string('SubJets') )
+        setattr( process, params['algo']+'GenJetsSoftDrop', genSoftDrop )
+       
+        genSoftDropMass = ak8PFJetsCHSSoftDropMass.clone( src = cms.InputTag( params['algo']+'GenJetsNoNu' ),
+                                                 matched = cms.InputTag( params['algo']+'GenJetsSoftDrop'),
+                                                 distMax = cms.double( jetSize ) ) 
+        setattr( process, params['algo']+'GenJetsSoftDropMass', genSoftDropMass )
+        process.jmfw_analyzers += genSoftDrop
+        process.jmfw_analyzers += genSoftDropMass
+ 
+
         for index, pu_method in enumerate(params['pu_methods']):
 
             algo = params['algo'].upper()
@@ -645,6 +716,7 @@ def createProcess(isMC, globalTag, readJECFromDB=False, jec_database=None, jec_d
                     srcVtx        = cms.InputTag('offlineSlimmedPrimaryVertices'),
                     srcMuons      = cms.InputTag('selectedPatMuons'),
                     genjets       = cms.InputTag('slimmedGenJets'),
+                    JetAlgo = cms.string( jetALGO ) , 
                     )
 
             name = (algo + 'PF' + pu_method).upper()
