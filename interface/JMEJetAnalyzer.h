@@ -111,6 +111,7 @@ class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
         std::vector<float>& pull = tree["pull"].write<std::vector<float>>();
         std::vector<float>& jetRneutral = tree["jetRneutral"].write<std::vector<float>>();
         std::vector<float>& jetRchg = tree["jetRchg"].write<std::vector<float>>();
+        std::vector<float>& jetRchg_test = tree["jetRchg_test"].write<std::vector<float>>();
         std::vector<float>& jetR = tree["jetR"].write<std::vector<float>>();
         std::vector<float>& Ttheta = tree["Ttheta"].write<std::vector<float>>();
 

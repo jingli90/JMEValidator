@@ -358,6 +358,7 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
     float sumTkPt(0.0);
     float beta_tmp(0.0), betaStar_tmp(0.0), betaStarClassic_tmp(0.0), betaClassic_tmp(0.0);
     float pTMax(0.0), pTMaxChg(0.0),pTMaxNeutral(0.0), dZ2(-999),d02(-999);
+	float pTMaxChg_test(0.0);
     float sumW(0.0), sumW2(0.0), sumWdR2(0.0);
     float sum_deta(0.0),sum_dphi(0.0),sum_deta2(0.0),sum_dphi2(0.0),sum_detadphi(0.0),Teta(0.0),Tphi(0.0);
     float ave_deta(0.0), ave_dphi(0.0);
@@ -408,6 +409,11 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
         const reco::Candidate* icand = pfJetConstituent.get();
         const pat::PackedCandidate* lPack = dynamic_cast<const pat::PackedCandidate *>( icand );
         if (lPack) {
+			if(lPack->pdgId() == 22){
+				if(lPack->pt() > pTMaxChg_test){
+					pTMaxChg_test = lPack->pt();
+				}
+			}
 
             if (fabs(lPack->charge()) > 0) {
 
@@ -467,6 +473,7 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
         ptD.push_back(sqrt(sumW2) / sumW);
         jetRneutral.push_back(pTMaxNeutral/sumW);
         jetRchg.push_back(pTMaxChg/sumW);
+		jetRchg_test.push_back(pTMaxChg_test/sumW);
         jetR.push_back(pTMax/sumW);
         Teta = Teta/sumW;
         Tphi = Tphi/sumW;
@@ -513,6 +520,7 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
         ptD.push_back(-999);
         jetRneutral.push_back(-999);
         jetRchg.push_back(-999);
+		jetRchg_test.push_back(-999);
         jetR.push_back(-999);
     }
     if (sumTkPt > 0) {
