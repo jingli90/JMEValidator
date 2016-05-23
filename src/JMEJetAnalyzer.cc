@@ -45,6 +45,9 @@
 #include <regex>
 #include <string>
 
+#include "TMatrixDSym.h"
+#include "TMatrixDSymEigen.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 // construction/destruction
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,7 +162,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
 
      // New jet flavor informations
      // See https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools
-     partonFlavor.push_back(jet.partonFlavour());
+	 partonFlavor.push_back(jet.genParton() ? jet.genParton()->pdgId() : 0);
      hadronFlavor.push_back(jet.hadronFlavour());
 
      // b-tagging discriminators
@@ -389,7 +392,7 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
         sum_deta     += deta*weight2;
         sum_dphi     += dphi*weight2;
         sum_deta2    += deta*deta*weight2;
-        sum_detadphi += deta*dphi*weight2;
+		sum_detadphi += std::abs(deta)*dphi*weight2;
         sum_dphi2    += dphi*dphi*weight2;
         Teta         += weight * dR * deta;
         Tphi         += weight * dR * dphi;
@@ -452,15 +455,15 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
 
     if (sumW > 0) {
         DRweighted.push_back(sumWdR2 / sumW2);
-        fRing0.push_back(sum_rings[0] / sumW);
-        fRing1.push_back(sum_rings[1] / sumW);
-        fRing2.push_back(sum_rings[2] / sumW);
-        fRing3.push_back(sum_rings[3] / sumW);
-        fRing4.push_back(sum_rings[4] / sumW);
-        fRing5.push_back(sum_rings[5] / sumW);
-        fRing6.push_back(sum_rings[6] / sumW);
-        fRing7.push_back(sum_rings[7] / sumW);
-        fRing8.push_back(sum_rings[8] / sumW);
+        fRing0.push_back(sum_rings[0] / jet.correctedJet(0).pt()); //jet.correctedJet(0).pt() instead of sumW for consistency with CMSSW
+        fRing1.push_back(sum_rings[1] / jet.correctedJet(0).pt());
+        fRing2.push_back(sum_rings[2] / jet.correctedJet(0).pt());
+        fRing3.push_back(sum_rings[3] / jet.correctedJet(0).pt());
+        fRing4.push_back(sum_rings[4] / jet.correctedJet(0).pt());
+        fRing5.push_back(sum_rings[5] / jet.correctedJet(0).pt());
+        fRing6.push_back(sum_rings[6] / jet.correctedJet(0).pt());
+        fRing7.push_back(sum_rings[7] / jet.correctedJet(0).pt());
+        fRing8.push_back(sum_rings[8] / jet.correctedJet(0).pt());
         ptD.push_back(sqrt(sumW2) / sumW);
         jetRneutral.push_back(pTMaxNeutral/sumW);
         jetRchg.push_back(pTMaxChg/sumW);
@@ -472,18 +475,29 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
         }
         ave_deta = sum_deta/sumW2;
         ave_dphi = sum_dphi/sumW2;
-        float ave_deta2 = sum_deta2/sumW2;
-        float ave_dphi2 = sum_dphi2/sumW2;
-        float a = ave_deta2-ave_deta*ave_deta;
-        float b = ave_dphi2-ave_dphi*ave_dphi;
-        float c = -(sum_detadphi/sumW2-ave_deta*ave_dphi);
-        float delta = sqrt(fabs((a-b)*(a-b)+4*c*c));
-        if (a+b+delta > 0) {
-        	axis1 = sqrt(0.5*(a+b+delta));
-        }
-        if (a+b-delta > 0) {
-        	axis2 = sqrt(0.5*(a+b-delta));
-        }
+
+		TMatrixDSym covMatrix(2); covMatrix = 0.;
+		covMatrix(0,0) = sum_deta2/sumW2;
+		covMatrix(0,1) = sum_detadphi/sumW2;
+		covMatrix(1,1) = sum_dphi2/sumW2;
+		covMatrix(1,0) = covMatrix(0,1);
+		TVectorD eigVals(2); eigVals = TMatrixDSymEigen(covMatrix).GetEigenValues();
+		axis1 = sqrt(std::abs(eigVals(0)));
+		axis2 = sqrt(std::abs(eigVals(1)));
+		if( axis1 < axis2 ) { std::swap(axis1,axis2); }
+
+        //float ave_deta2 = sum_deta2/sumW2;
+        //float ave_dphi2 = sum_dphi2/sumW2;
+        //float a = ave_deta2-ave_deta*ave_deta;
+        //float b = ave_dphi2-ave_dphi*ave_dphi;
+        //float c = -(sum_detadphi/sumW2-ave_deta*ave_dphi);
+        //float delta = sqrt(fabs((a-b)*(a-b)+4*c*c));
+        //if (a+b+delta > 0) {
+        	//axis1 = sqrt(0.5*(a+b+delta));
+        //}
+        //if (a+b-delta > 0) {
+        	//axis2 = sqrt(0.5*(a+b-delta));
+        //}
     }
     else{
         DRweighted.push_back(-999);
