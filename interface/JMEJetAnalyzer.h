@@ -27,7 +27,7 @@ class JMEJetAnalyzer : public JME::PhysicsObjectAnalyzer
         void analyze(const edm::Event& iEvent,const edm::EventSetup& iSetup);
         void endJob(){;}
 
-        void computeBetaStar(const pat::Jet& jet, const std::vector<reco::Vertex>& vertices);
+		void computeBetaStar(const pat::Jet& jet, const edm::Handle<std::vector<reco::Vertex>> vertices);  
 
     private:
         // member data

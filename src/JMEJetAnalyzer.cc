@@ -138,6 +138,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
   bool has_gen_jets = iEvent.getByToken(srcGenJet_, genjets);
 
   //loop over the jets and fill the ntuple
+  std::cout<<"A new event!"<<std::endl;
   size_t nJet = (nJetMax_ == 0) ? jets->size() : std::min(nJetMax_, (unsigned int) jets->size());
   for (size_t iJet = 0; iJet < nJet; iJet++) {
 
@@ -278,7 +279,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
      //emEnergyInHF.push_back(jet.emEnergyInHF());
      //energyFractionHadronic.push_back(jet.energyFractionHadronic());
 
-     computeBetaStar(jet, *vtx);
+     computeBetaStar(jet, vtx); 
   }
 
   if (has_gen_jets) {
@@ -352,7 +353,10 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
   tree.fill();
 }
 
-void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco::Vertex>& vertices) {
+void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const edm::Handle<std::vector<reco::Vertex>> vertices) 
+{
+
+	std::cout <<"Memo : is the first vertex fake ? " << ( (*vertices).at(0).isFake() ? "YES" : "NO" )<< std::endl;
 
     int nCh_tmp(0), nNeutrals_tmp(0);
     float sumTkPt(0.0);
@@ -407,8 +411,24 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
 
         reco::CandidatePtr pfJetConstituent = jet.sourceCandidatePtr(j);
         const reco::Candidate* icand = pfJetConstituent.get();
+		//if( icand != 0 ){
+			//std::cout << typeid( *icand ).name() << std::endl ;
+		//}
         const pat::PackedCandidate* lPack = dynamic_cast<const pat::PackedCandidate *>( icand );
+		std::cout <<"Is the dynamic cast of the jet constituent to pat::PackedCandidate looks fine ? : " 
+			<< ( (lPack == 0) ? "No. Instead, we try to convert this to PackedCandidate." : "Yes. We use this pointer." ) << std::endl;
+
+		if(lPack == 0){
+			reco::VertexRefProd myRefProd( vertices );
+			const long idx_TheLeadingVertex = 0 ; 
+			lPack = new pat::PackedCandidate ( (*icand) , myRefProd , idx_TheLeadingVertex );
+			std::cout <<"(Candidate->PackedCandidate) : Vetex Z " << icand->pt() <<" " << lPack -> dz() << std::endl;
+		}else{
+			std::cout <<"(PackedCandidate) Vetex Z " << icand->pt() <<" " << lPack->dz() << std::endl;
+		}
+
         if (lPack) {
+			std::cout<<"pt="<<lPack->pt()<<" id="<<lPack->pdgId()<<" charge="<<lPack->charge()<<" dz="<<lPack->dz()<<std::endl;
 			if(lPack->pdgId() == 22){
 				if(lPack->pt() > pTMaxChg_test){
 					pTMaxChg_test = lPack->pt();
@@ -430,13 +450,14 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
                 double dZ0 = lPack->dz();
                 double dZ_tmp = dZ0;
 
-                for (const auto& iv: vertices) {
+                for (const auto& iv: (*vertices)) {
                     if (iv.isFake())
                         continue;
                     if (fabs(lPack->dz(iv.position())) < fabs(dZ_tmp)) {
                         dZ_tmp = lPack->dz(iv.position());
                     }
                 }
+				std::cout <<"Minimum DZ = " << fabs(dZ_tmp) << std::endl ; 
 
                 if (inVtx0) {
                     betaClassic_tmp += tkpt;
