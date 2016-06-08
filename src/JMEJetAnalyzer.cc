@@ -162,7 +162,7 @@ void JMEJetAnalyzer::analyze(const edm::Event& iEvent,
 
      // New jet flavor informations
      // See https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools
-	 partonFlavor.push_back(jet.genParton() ? jet.genParton()->pdgId() : 0);
+     partonFlavor.push_back(jet.genParton() ? jet.genParton()->pdgId() : 0);
      hadronFlavor.push_back(jet.hadronFlavour());
 
      // b-tagging discriminators
@@ -357,7 +357,7 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
     int nCh_tmp(0), nNeutrals_tmp(0);
     float sumTkPt(0.0);
     float beta_tmp(0.0), betaStar_tmp(0.0), betaStarClassic_tmp(0.0), betaClassic_tmp(0.0);
-    float pTMax(0.0), pTMaxChg(0.0),pTMaxNeutral(0.0), dZ2(-999),d02(-999);
+    float pTMax(0.0), pTMaxChg(0.0),pTMaxNeutral(0.0), dZ2(-999), d02(-999);
 	float pTMaxChg_test(0.0);
     float sumW(0.0), sumW2(0.0), sumWdR2(0.0);
     float sum_deta(0.0),sum_dphi(0.0),sum_deta2(0.0),sum_dphi2(0.0),sum_detadphi(0.0),Teta(0.0),Tphi(0.0);
@@ -393,7 +393,7 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
         sum_deta     += deta*weight2;
         sum_dphi     += dphi*weight2;
         sum_deta2    += deta*deta*weight2;
-		sum_detadphi += std::abs(deta)*dphi*weight2;
+        sum_detadphi += std::abs(deta)*dphi*weight2;
         sum_dphi2    += dphi*dphi*weight2;
         Teta         += weight * dR * deta;
         Tphi         += weight * dR * dphi;
@@ -483,15 +483,15 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
         ave_deta = sum_deta/sumW2;
         ave_dphi = sum_dphi/sumW2;
 
-		TMatrixDSym covMatrix(2); covMatrix = 0.;
-		covMatrix(0,0) = sum_deta2/sumW2;
-		covMatrix(0,1) = sum_detadphi/sumW2;
-		covMatrix(1,1) = sum_dphi2/sumW2;
-		covMatrix(1,0) = covMatrix(0,1);
-		TVectorD eigVals(2); eigVals = TMatrixDSymEigen(covMatrix).GetEigenValues();
-		axis1 = sqrt(std::abs(eigVals(0)));
-		axis2 = sqrt(std::abs(eigVals(1)));
-		if( axis1 < axis2 ) { std::swap(axis1,axis2); }
+        TMatrixDSym covMatrix(2); covMatrix = 0.;
+	covMatrix(0,0) = sum_deta2/sumW2;
+	covMatrix(0,1) = sum_detadphi/sumW2;
+	covMatrix(1,1) = sum_dphi2/sumW2;
+	covMatrix(1,0)  = covMatrix(0,1);
+	TVectorD eigVals(2); eigVals = TMatrixDSymEigen(covMatrix).GetEigenValues();
+	axis1 = sqrt(std::abs(eigVals(0)));
+	axis2 = sqrt(std::abs(eigVals(1)));
+	if( axis1 < axis2 ) { std::swap(axis1,axis2); }
 
         //float ave_deta2 = sum_deta2/sumW2;
         //float ave_dphi2 = sum_dphi2/sumW2;
@@ -500,10 +500,10 @@ void JMEJetAnalyzer::computeBetaStar(const pat::Jet& jet, const std::vector<reco
         //float c = -(sum_detadphi/sumW2-ave_deta*ave_dphi);
         //float delta = sqrt(fabs((a-b)*(a-b)+4*c*c));
         //if (a+b+delta > 0) {
-        	//axis1 = sqrt(0.5*(a+b+delta));
+        //	axis1 = sqrt(0.5*(a+b+delta));
         //}
         //if (a+b-delta > 0) {
-        	//axis2 = sqrt(0.5*(a+b-delta));
+        //	axis2 = sqrt(0.5*(a+b-delta));
         //}
     }
     else{
